@@ -1,0 +1,148 @@
+﻿@model IEnumerable<NobelProjectAPI.Models.Prize>
+
+@{
+    ViewBag.Title = "Index2";
+}
+
+<h2>Index2</h2>
+
+<div class="row">
+
+    <input type="button" class="btn btn-primary" id="getbutton" name="btnSave" value="Retrieve data" />
+
+    <input type="button" class="btn btn-info" id="savebutton" name="btnSave" value="Save data" />
+
+    <input type="button" class="btn btn-danger" id="clearbutton" name="btnSave" value="Clear data" />
+</div>
+
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Year)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Category)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.FirstName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Surname)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Year)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Surname)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+            </td>
+        </tr>
+    }
+
+</table>
+
+
+<script>
+
+        function Prize(year, category, firstname, surname) {
+
+            this.Year = year;
+            this.Category = category;
+            this.Firstname = firstname;
+            this.Surname = surname;
+
+        }
+
+
+        Prizes = [];
+        var pr;
+
+        $("#getbutton").click(function () {
+
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                contentType: "application/json",
+                url: "https://api.nobelprize.org/v1/prize.json?",
+
+                success: function (data) {
+                    console.log(data);
+
+                    $.each(data.prizes, function (i, prize) {
+
+                        if (typeof prize.laureates === 'undefined') {
+
+                            pr = new Prize(prize.Year, prize.Category, "no firstname", "no lastname");
+                        }
+                        else {
+                            pr = new Prize(prize.year, prize.category, prize.laureates[0].firstname, prize.laureates[0].surname);
+                        }
+
+                        Prizes.push(pr);
+                       console.log(pr);
+                    })
+
+
+                    //$("#peirama").text(data.prizes[0].category);
+
+                }
+            });
+
+
+        });
+
+
+
+
+
+        $("#savebutton").click(function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("SavePrizes", "Prize")",
+                dataType: "JSON",
+                cache: false,
+                traditional: true,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ Prizes: Prizes }),
+
+                //success: function () {
+
+                //    alert("Data Successfully saved to SQL Database!");
+                //}
+
+
+            }).then(function () {
+                  alert("Data Successfully saved to SQL Database!");
+            });
+
+
+        });
+
+
+         $('#clearbutton').click(function () {
+
+                $.post("@Url.Action("ClearPrizes","Prize")");
+         });
+
+
+
+</script>
